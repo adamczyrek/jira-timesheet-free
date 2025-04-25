@@ -63,36 +63,6 @@ This approach works because:
 - The proxy server runs on the same origin as the web application, avoiding CORS entirely
 - The server adds proper CORS headers in its responses back to the browser
 
-### Security Implications
-1. **Jira's CORS Policy**: Atlassian intentionally doesn't allow arbitrary domains to access their API directly from browsers. This prevents malicious websites from making unauthorized requests using stored cookies or credentials.
-
-2. **Client-side Credentials**: Without a proxy, you'd need to include your API token in the frontend JavaScript code, which would:
-   - Make your credentials visible in the browser's source code
-   - Risk exposure through browser developer tools
-   - Make it difficult to update credentials without changing the code
-
-### How the Proxy Solves These Issues
-Our proxy server:
-1. Runs locally on your machine
-2. Receives requests from the web interface
-3. Adds your credentials server-side
-4. Forwards the authenticated request to Jira
-5. Returns the response to the web interface
-
-This approach:
-- Keeps API credentials secure on the server side
-- Avoids CORS restrictions (browser → localhost is allowed)
-- Provides a clean separation between frontend and API interaction
-- Allows for additional security measures (rate limiting, request validation, etc.)
-
-### Alternative Approaches (and Why We Didn't Use Them)
-1. **Browser Extensions**: Could bypass CORS but requires installation and maintenance
-2. **CORS Proxy Services**: Third-party services exist but would expose your credentials
-3. **Jira OAuth**: More complex to set up and requires admin access to create apps
-4. **Standalone Desktop App**: Would solve CORS but lose the convenience of web deployment
-
-Our local proxy strikes the right balance between security, simplicity, and usability.
-
 ## Prerequisites
 
 - Python 3.6 or higher
