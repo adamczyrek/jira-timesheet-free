@@ -11,11 +11,12 @@ A lightweight, secure web application for generating timesheet reports from Jira
 - Direct links to Jira issues
 - Save/load configuration locally
 - Zero external dependencies
+- Responsive design with automatic light/dark theme support
 
 ## Project Structure
 
 ```
-jira-hours/
+jira-timesheet-free/
 ├── static/              # Static assets
 │   ├── index.html      # Main HTML file
 │   ├── script.js       # JavaScript code
@@ -85,8 +86,8 @@ Our local proxy strikes the right balance between security, simplicity, and usab
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/jira-hours.git
-   cd jira-hours
+   git clone https://github.com/yourusername/jira-timesheet-free.git
+   cd jira-timesheet-free
    ```
 
 2. Start the server:
@@ -106,7 +107,7 @@ You'll need the following information from your Jira instance:
 1. **Jira Domain**: Your Atlassian domain (e.g., `your-domain.atlassian.net`)
 2. **Email**: Your Atlassian account email
 3. **API Token**: Generate from [Atlassian Account Settings](https://id.atlassian.com/manage-profile/security/api-tokens)
-4. **User Account ID**: Your Atlassian account ID (found in your profile URL)
+4. **Timesheet User Email**: Email of the user whose timesheet you want to generate (leave empty to use your own email)
 
 Optional filters:
 - Project Key (e.g., "PROJ")

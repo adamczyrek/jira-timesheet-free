@@ -3,28 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
     <title>Jira Hours Report</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <h1>Jira Timesheet Generator</h1>
+        <header class="page-header">
+            <h1>Jira Timesheet Generator</h1>
+            <div class="header-description">Generate a timesheet for a specific user based on their worklogs in Jira, for free!</div>
+        </header>
         
-        <div id="errorDisplay" class="error-section hidden">
-            <div class="error-content">
-                <div class="error-header">
-                    <span class="error-title">Error</span>
-                    <button class="error-close" onclick="closeError()">×</button>
-                </div>
-                <div class="error-message"></div>
-                <div class="error-details hidden">
-                    <div class="error-details-header">Technical Details</div>
-                    <pre class="error-details-content"></pre>
-                </div>
-                <button class="error-toggle-details" onclick="toggleErrorDetails()">Show Technical Details</button>
-            </div>
-        </div>
-
         <div class="config-section">
             <h2>Configuration</h2>
             <div class="form-group">
@@ -34,16 +23,18 @@
             <div class="form-group">
                 <label for="email">Email:</label>
                 <input type="email" id="email" placeholder="your-email@example.com">
-                <div class="field-description">The email address associated with your Atlassian account. This is used for API authentication.</div>
+                <div class="field-description">The email address associated with your Atlassian account. This is used for API authentication, not for the timesheet user.</div>
             </div>
             <div class="form-group">
                 <label for="apiToken">API Token:</label>
                 <input type="password" id="apiToken" placeholder="your-api-token">
+                <div class="field-description">To generate an API token, open Jira, click your Avatar icon in the upper-right, click Account Settings, Security tab, and click Create and manage API tokens.</div>
+
             </div>
             <div class="form-group">
-                <label for="accountId">User Account ID:</label>
-                <input type="text" id="accountId" placeholder="user-account-id">
-                <div class="field-description">This is the user account for which the timesheet is being generated. Your Atlassian account ID (not your email). You can find this by viewing your Jira profile - it's in the URL as '123456:123456f7-C452-66bd-ac99-1236ef084ca6'.</div>
+                <label for="userEmail">Timesheet User Email:</label>
+                <input type="email" id="userEmail" placeholder="user-email@example.com">
+                <div class="field-description">The email address of the user for whom to generate the timesheet. Leave empty to use your own email. If you are not a Jira admin, you must leave this empty.</div>
             </div>
             <div class="form-group">
                 <label for="projectKey">Project Key (optional):</label>
@@ -72,6 +63,21 @@
             <div id="progressText">Processing...</div>
         </div>
 
+        <div id="errorDisplay" class="error-section hidden">
+            <div class="error-content">
+                <div class="error-header">
+                    <span class="error-title">Error</span>
+                    <button class="error-close" id="errorClose">×</button>
+                </div>
+                <div class="error-message"></div>
+                <div class="error-details hidden">
+                    <div class="error-details-header">Technical Details</div>
+                    <pre class="error-details-content"></pre>
+                </div>
+                <button class="error-toggle-details" id="errorToggle">Show Technical Details</button>
+            </div>
+        </div>
+        
         <div id="results" class="results-section hidden">
             <h2>Results</h2>
             <div class="download-buttons">

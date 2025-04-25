@@ -4,7 +4,7 @@ const elements = {
         jiraDomain: document.getElementById('jiraDomain'),
         email: document.getElementById('email'),
         apiToken: document.getElementById('apiToken'),
-        accountId: document.getElementById('accountId'),
+        userEmail: document.getElementById('userEmail'),
         projectKey: document.getElementById('projectKey'),
         startDate: document.getElementById('startDate'),
         endDate: document.getElementById('endDate')
@@ -14,7 +14,9 @@ const elements = {
         saveConfig: document.getElementById('saveConfig'),
         loadConfig: document.getElementById('loadConfig'),
         downloadCsv: document.getElementById('downloadCsv'),
-        downloadSummary: document.getElementById('downloadSummary')
+        downloadSummary: document.getElementById('downloadSummary'),
+        errorToggle: document.getElementById('errorToggle'),
+        errorClose: document.getElementById('errorClose')
     },
     sections: {
         progress: document.getElementById('progress'),
@@ -24,8 +26,7 @@ const elements = {
     error: {
         message: document.querySelector('.error-message'),
         details: document.querySelector('.error-details'),
-        detailsContent: document.querySelector('.error-details-content'),
-        toggleButton: document.querySelector('.error-toggle-details')
+        detailsContent: document.querySelector('.error-details-content')
     },
     progressBar: document.querySelector('.progress-fill'),
     progressText: document.getElementById('progressText'),
@@ -44,16 +45,18 @@ function showError(message, details = '') {
     elements.sections.progress.classList.add('hidden');
     elements.sections.results.classList.add('hidden');
     elements.error.details.classList.add('hidden');
-    elements.error.toggleButton.textContent = 'Show Technical Details';
+    elements.buttons.errorToggle.textContent = 'Show Technical Details';
 }
 
 function closeError() {
     elements.sections.error.classList.add('hidden');
 }
 
-function toggleErrorDetails() {
+function toggleErrorDetails(e) {
+    if (e) e.preventDefault();
+    
     const detailsSection = elements.error.details;
-    const toggleButton = elements.error.toggleButton;
+    const toggleButton = elements.buttons.errorToggle;
     const isHidden = detailsSection.classList.contains('hidden');
     
     detailsSection.classList.toggle('hidden');
@@ -137,13 +140,55 @@ async function fetchJiraData(url, authHeader) {
     }
 }
 
+// Look up user account ID from email
+async function lookupUserAccountId(domain, email, apiToken, userEmail) {
+    // Use the Jira API to look up the user
+    const authHeader = getAuthHeader(email, apiToken);
+    
+    // Encode the email for the URL
+    const encodedEmail = encodeURIComponent(userEmail);
+    
+    // Use the Jira API to look up the user
+    const userData = await fetchJiraData(
+        `https://${domain}/rest/api/3/user/search?query=${encodedEmail}`,
+        authHeader
+    );
+    
+    // Find the matching user
+    const matchingUser = userData.find(user => 
+        user.emailAddress && user.emailAddress.toLowerCase() === userEmail.toLowerCase()
+    );
+    
+    if (!matchingUser) {
+        throw new Error(`No user found with email: ${userEmail}`);
+    }
+    
+    return matchingUser.accountId;
+}
+
+// Show success message
+function showSuccess(message) {
+    elements.error.message.textContent = message;
+    elements.sections.error.classList.remove('hidden');
+    elements.error.message.style.color = 'var(--success-text)';
+    elements.sections.error.style.backgroundColor = 'var(--success-bg)';
+    elements.sections.error.style.borderColor = 'var(--success-border)';
+    
+    // Reset styles after 3 seconds
+    setTimeout(() => {
+        elements.sections.error.classList.add('hidden');
+        elements.error.message.style.color = '';
+        elements.sections.error.style.backgroundColor = '';
+        elements.sections.error.style.borderColor = '';
+    }, 3000);
+}
+
 // Validate configuration before making API calls
 function validateConfig(config) {
     const required = {
         'Jira Domain': config.domain,
         'Email': config.email,
-        'API Token': config.apiToken,
-        'User Account ID': config.accountId
+        'API Token': config.apiToken
     };
     
     const missing = Object.entries(required)
@@ -173,12 +218,23 @@ function validateConfig(config) {
 }
 
 // Event Listeners
-elements.buttons.generateReport.addEventListener('click', generateReport);
-elements.buttons.saveConfig.addEventListener('click', saveConfiguration);
-elements.buttons.loadConfig.addEventListener('click', loadConfiguration);
-elements.buttons.downloadCsv.addEventListener('click', () => downloadReport('detailed'));
-elements.buttons.downloadSummary.addEventListener('click', () => downloadReport('summary'));
-elements.error.toggleButton.addEventListener('click', toggleErrorDetails);
+document.addEventListener('DOMContentLoaded', function() {
+    elements.buttons.generateReport.addEventListener('click', generateReport);
+    elements.buttons.saveConfig.addEventListener('click', saveConfiguration);
+    elements.buttons.loadConfig.addEventListener('click', loadConfiguration);
+    elements.buttons.downloadCsv.addEventListener('click', () => downloadReport('detailed'));
+    elements.buttons.downloadSummary.addEventListener('click', () => downloadReport('summary'));
+    
+    // Ensure error toggle button works
+    if (elements.buttons.errorToggle) {
+        elements.buttons.errorToggle.addEventListener('click', toggleErrorDetails);
+    }
+    
+    // Ensure error close button works
+    if (elements.buttons.errorClose) {
+        elements.buttons.errorClose.addEventListener('click', closeError);
+    }
+});
 
 // Save configuration to localStorage
 function saveConfiguration() {
@@ -186,7 +242,7 @@ function saveConfiguration() {
         jiraDomain: elements.form.jiraDomain.value,
         email: elements.form.email.value,
         apiToken: elements.form.apiToken.value,
-        accountId: elements.form.accountId.value,
+        userEmail: elements.form.userEmail.value,
         projectKey: elements.form.projectKey.value,
         startDate: elements.form.startDate.value,
         endDate: elements.form.endDate.value
@@ -204,7 +260,6 @@ function loadConfiguration() {
                 elements.form[key].value = config[key];
             }
         });
-        alert('Configuration loaded successfully!');
     } else {
         alert('No saved configuration found.');
     }
@@ -245,7 +300,7 @@ async function generateReport() {
             domain: elements.form.jiraDomain.value.trim(),
             email: elements.form.email.value.trim(),
             apiToken: elements.form.apiToken.value.trim(),
-            accountId: elements.form.accountId.value.trim(),
+            userEmail: elements.form.userEmail.value.trim() || elements.form.email.value.trim(),
             projectKey: elements.form.projectKey.value.trim(),
             startDate: elements.form.startDate.value,
             endDate: elements.form.endDate.value
@@ -254,11 +309,25 @@ async function generateReport() {
         // Validate configuration
         validateConfig(config);
 
+        // Look up user account ID
+        updateProgress(10, 'Looking up user account...');
+        let userDisplayName;
+        
+        // Use the authentication email if userEmail is empty
+        const emailToUse = config.userEmail || config.email;
+        const accountId = await lookupUserAccountId(
+            config.domain, 
+            config.email, 
+            config.apiToken, 
+            emailToUse
+        );
+        
+        updateProgress(20, 'User found. Fetching issues...');
+
         const authHeader = getAuthHeader(config.email, config.apiToken);
-        const jqlQuery = buildJqlQuery(config.accountId, config.projectKey, config.startDate, config.endDate);
+        const jqlQuery = buildJqlQuery(accountId, config.projectKey, config.startDate, config.endDate);
         
         // Fetch issues
-        updateProgress(10, 'Fetching issues...');
         let startAt = 0;
         const maxResults = 50;
         let total = 1;
@@ -275,7 +344,7 @@ async function generateReport() {
                 allIssues = allIssues.concat(response.issues);
                 startAt += maxResults;
                 
-                const progress = Math.min((startAt / total) * 50, 50);
+                const progress = Math.min(20 + (startAt / total) * 30, 50);
                 updateProgress(progress, `Retrieved ${allIssues.length} of ${total} issues...`);
             } catch (error) {
                 // If we've already fetched some issues, we can try to continue with what we have
@@ -306,7 +375,7 @@ async function generateReport() {
                 );
                 
                 for (const worklog of worklogResponse.worklogs) {
-                    if (worklog.author.accountId === config.accountId) {
+                    if (worklog.author.accountId === accountId) {
                         worklogs.push({
                             issueKey: issue.key,
                             issueLink: `https://${config.domain}/browse/${issue.key}`,
