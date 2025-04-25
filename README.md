@@ -46,6 +46,19 @@ When making direct requests from a web browser to the Jira API, you'll encounter
 
 For example, if your page is served from `localhost:8000`, the browser will block direct requests to `your-company.atlassian.net` unless the Jira server explicitly allows it through CORS headers.
 
+### How Our Proxy Solves the CORS Challenge
+Our solution uses a simple Python HTTP server that acts as a proxy between your browser and the Jira API:
+
+1. Your browser makes requests to `http://localhost:8000/proxy` (same origin, so no CORS issues)
+2. The proxy server receives these requests and forwards them to the Jira API
+3. The Jira API responds to the proxy server
+4. The proxy server forwards the response back to your browser
+
+This approach works because:
+- CORS restrictions only apply to browser-initiated requests, not server-to-server communication
+- The proxy server runs on the same origin as the web application, avoiding CORS entirely
+- The server adds proper CORS headers in its responses back to the browser
+
 ### Security Implications
 1. **Jira's CORS Policy**: Atlassian intentionally doesn't allow arbitrary domains to access their API directly from browsers. This prevents malicious websites from making unauthorized requests using stored cookies or credentials.
 
@@ -64,7 +77,7 @@ Our proxy server:
 
 This approach:
 - Keeps API credentials secure on the server side
-- Avoids CORS restrictions (browser -> localhost is allowed)
+- Avoids CORS restrictions (browser → localhost is allowed)
 - Provides a clean separation between frontend and API interaction
 - Allows for additional security measures (rate limiting, request validation, etc.)
 
@@ -107,7 +120,7 @@ You'll need the following information from your Jira instance:
 1. **Jira Domain**: Your Atlassian domain (e.g., `your-domain.atlassian.net`)
 2. **Email**: Your Atlassian account email
 3. **API Token**: Generate from [Atlassian Account Settings](https://id.atlassian.com/manage-profile/security/api-tokens)
-4. **Timesheet User Email**: Email of the user whose timesheet you want to generate (leave empty to use your own email)
+4. **Timesheet User Email**: Email of the user whose timesheet you want to generate (leave empty to use your own email, you can only generate timesheets for other users if you are a Jira admin)
 
 Optional filters:
 - Project Key (e.g., "PROJ")
