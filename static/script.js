@@ -329,73 +329,95 @@ async function generateReport() {
         
         // Fetch issues
         let startAt = 0;
-        const maxResults = 50;
-        let total = 1;
+        let total = null;
         let allIssues = [];
+        let batchCount = 0;
+        const maxResults = 50;
         
-        while (startAt < total) {
-            try {
-                const response = await fetchJiraData(
-                    `https://${config.domain}/rest/api/3/search?jql=${jqlQuery}&maxResults=${maxResults}&startAt=${startAt}`,
-                    authHeader
-                );
-                
-                total = response.total;
-                allIssues = allIssues.concat(response.issues);
-                startAt += maxResults;
-                
-                const progress = Math.min(20 + (startAt / total) * 30, 50);
-                updateProgress(progress, `Retrieved ${allIssues.length} of ${total} issues...`);
-            } catch (error) {
-                // If we've already fetched some issues, we can try to continue with what we have
-                if (allIssues.length > 0) {
-                    console.warn('Error fetching all issues, continuing with partial data:', error);
-                    break;
-                }
-                throw error;
+        do {
+            const issuesResponse = await fetchJiraData(
+                `https://${config.domain}/rest/api/3/search?jql=${jqlQuery}&fields=summary,worklog&maxResults=${maxResults}&startAt=${startAt}`,
+                authHeader
+            );
+            
+            if (!issuesResponse.issues) {
+                throw new Error('Invalid response from Jira API: No issues array found');
             }
-        }
-
-        if (allIssues.length === 0) {
-            showError('No issues found matching the specified criteria. Please check your filters and try again.');
-            return;
-        }
-
-        // Process worklogs
-        updateProgress(50, 'Fetching worklog details...');
-        const worklogs = [];
-        let processedIssues = 0;
-        let errors = [];
+            
+            allIssues = [...allIssues, ...issuesResponse.issues];
+            
+            if (total === null) {
+                total = issuesResponse.total;
+            }
+            
+            startAt += maxResults;
+            batchCount++;
+            
+            const progressPercentage = Math.min(20 + (batchCount * maxResults / total) * 30, 50);
+            updateProgress(progressPercentage, `Retrieved ${allIssues.length} of ${total} issues...`);
+            
+        } while (startAt < total);
         
-        for (const issue of allIssues) {
+        // Process worklogs
+        updateProgress(50, 'Processing worklogs...');
+        
+        const issues = allIssues.filter(issue => issue.fields.worklog && issue.fields.worklog.total > 0);
+        let totalProcessed = 0;
+        const worklogs = [];
+        const errors = [];
+        
+        for (const issue of issues) {
             try {
                 const worklogResponse = await fetchJiraData(
                     `https://${config.domain}/rest/api/3/issue/${issue.key}/worklog`,
                     authHeader
                 );
                 
-                for (const worklog of worklogResponse.worklogs) {
-                    if (worklog.author.accountId === accountId) {
-                        worklogs.push({
-                            issueKey: issue.key,
-                            issueLink: `https://${config.domain}/browse/${issue.key}`,
-                            summary: issue.fields.summary,
-                            date: worklog.started.substring(0, 10),
-                            hours: worklog.timeSpentSeconds / 3600,
-                            comment: worklog.comment?.content?.[0]?.content?.[0]?.text || 'No comment'
-                        });
-                    }
+                if (!worklogResponse.worklogs) {
+                    throw new Error(`No worklogs found for issue ${issue.key}`);
                 }
+                
+                const issueWorklogs = worklogResponse.worklogs
+                    .filter(log => log.author.accountId === accountId)
+                    .filter(log => {
+                        if (!config.startDate && !config.endDate) return true;
+                        
+                        const logDate = log.started.substring(0, 10);
+                        if (config.startDate && logDate < config.startDate) return false;
+                        if (config.endDate && logDate > config.endDate) return false;
+                        return true;
+                    })
+                    .map(log => {
+                        // Convert seconds to hours
+                        const hours = log.timeSpentSeconds / 3600;
+                        const date = log.started.substring(0, 10);
+                        const comment = log.comment || '';
+                        
+                        return {
+                            issueKey: issue.key,
+                            summary: issue.fields.summary,
+                            date,
+                            hours,
+                            comment: typeof comment === 'string' ? comment : 
+                                     comment.content ? comment.content.map(c => 
+                                         c.content ? c.content.map(t => t.text).join('') : ''
+                                     ).join('') : '',
+                            issueLink: `https://${config.domain}/browse/${issue.key}`
+                        };
+                    });
+                
+                worklogs.push(...issueWorklogs);
             } catch (error) {
-                errors.push(`Failed to fetch worklogs for ${issue.key}: ${error.message}`);
-                continue;
+                console.error(`Error fetching worklogs for ${issue.key}:`, error);
+                errors.push(`Error fetching worklogs for ${issue.key}: ${error.message}`);
             }
             
-            processedIssues++;
-            const progress = 50 + (processedIssues / allIssues.length) * 50;
-            updateProgress(progress, `Processing issue ${processedIssues} of ${allIssues.length}...`);
+            totalProcessed++;
+            const progressPercentage = 50 + (totalProcessed / issues.length) * 40;
+            updateProgress(progressPercentage, `Processed ${totalProcessed} of ${issues.length} issues with worklogs...`);
         }
-
+        
+        // Check if any worklogs were found
         if (worklogs.length === 0) {
             if (errors.length > 0) {
                 showError(
@@ -407,18 +429,21 @@ async function generateReport() {
             }
             return;
         }
-
+        
         if (errors.length > 0) {
             console.warn('Some worklogs could not be fetched:', errors);
         }
-
+        
         // Sort worklogs by date
         worklogs.sort((a, b) => a.date.localeCompare(b.date));
-
+        
         // Calculate total hours
         const totalHours = worklogs.reduce((sum, log) => sum + log.hours, 0);
+        
+        // Update both total hours displays
         elements.totalHours.textContent = `Total Hours: ${totalHours.toFixed(2)}`;
-
+        document.getElementById('tableTotalHours').textContent = totalHours.toFixed(2);
+        
         // Generate summary data
         window.summaryData = worklogs.reduce((acc, log) => {
             if (!acc[log.date]) {
@@ -427,10 +452,10 @@ async function generateReport() {
             acc[log.date] += log.hours;
             return acc;
         }, {});
-
+        
         // Store worklog data for downloads
         window.worklogData = worklogs;
-
+        
         // Update table
         const tbody = elements.worklogTable.querySelector('tbody');
         tbody.innerHTML = worklogs.map(log => `
@@ -442,13 +467,13 @@ async function generateReport() {
                 <td>${log.comment}</td>
             </tr>
         `).join('');
-
+        
         // Show results
         updateProgress(100, errors.length > 0 ? 
             `Report generated with some errors (${errors.length} issues affected)` : 
             'Report generated successfully!');
         elements.sections.results.classList.remove('hidden');
-
+        
     } catch (error) {
         showError(
             error.message || 'An unexpected error occurred while generating the report',
@@ -464,6 +489,9 @@ function downloadReport(type) {
         return;
     }
 
+    // Calculate total hours directly from worklog data for consistency
+    const totalHours = window.worklogData.reduce((sum, log) => sum + log.hours, 0);
+    
     let csvContent, filename;
     
     if (type === 'detailed') {
@@ -472,6 +500,8 @@ function downloadReport(type) {
         csvContent += window.worklogData.map(log => 
             `${log.issueKey},"${log.summary.replace(/"/g, '""')}",${log.date},${log.hours.toFixed(2)},"${log.comment.replace(/"/g, '""')}","${log.issueLink}"`
         ).join('\n');
+        // Add a total row at the bottom
+        csvContent += `\n"TOTAL","","","${totalHours.toFixed(2)}","",""`;
         filename = 'worklog_report.csv';
     } else {
         // Summary report
@@ -480,6 +510,8 @@ function downloadReport(type) {
             .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
             .map(([date, hours]) => `${date},${hours.toFixed(2)}`)
             .join('\n');
+        // Add a total row at the bottom
+        csvContent += `\nTOTAL,${totalHours.toFixed(2)}`;
         filename = 'summary_worklog_report.csv';
     }
 

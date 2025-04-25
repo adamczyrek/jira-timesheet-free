@@ -86,7 +86,7 @@
                 <button id="downloadSummary" class="secondary-button">Download Summary Report</button>
             </div>
             <div class="summary-stats">
-                <div id="totalHours">Total Hours: 0</div>
+                <div id="totalHours" class="total-hours">Total Hours: 0</div>
             </div>
             <div class="table-container">
                 <table id="worklogTable">
@@ -100,6 +100,13 @@
                         </tr>
                     </thead>
                     <tbody></tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" class="total-label">Total Hours:</td>
+                            <td id="tableTotalHours" class="total-value">0</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
         </div>

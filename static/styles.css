@@ -29,6 +29,8 @@
     --success-border: #00B8D9;
     --success-text: #006644;
     --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --accent-light: #f4f5f7;
+    --row-alternate: #f8f9fa;
 }
 
 /* Dark theme */
@@ -62,6 +64,8 @@
         --success-border: #00B8D9;
         --success-text: #00C7E6;
         --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        --accent-light: #3d3d3d;
+        --row-alternate: #383838;
     }
 }
 
@@ -218,13 +222,17 @@ table {
 th, td {
     padding: 0.75rem;
     text-align: left;
-    border-bottom: 1px solid var(--table-border);
+    border-bottom: 1px solid var(--border-color);
 }
 
 th {
-    background-color: var(--table-header-bg);
+    background-color: var(--accent-light);
     color: var(--text-color);
     font-weight: 600;
+}
+
+tr:nth-child(even) {
+    background-color: var(--row-alternate);
 }
 
 tr:hover {
@@ -249,12 +257,34 @@ a:hover {
 .summary-stats {
     margin: 1rem 0;
     padding: 1rem;
-    background-color: var(--table-header-bg);
+    background-color: var(--accent-light);
     border-radius: 4px;
 }
 
 .hidden {
     display: none;
+}
+
+/* Total hours styling */
+.total-hours {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--text-color);
+    margin: 0.5rem 0;
+}
+
+tfoot tr {
+    background-color: var(--accent-light) !important;
+    font-weight: bold;
+}
+
+.total-label {
+    text-align: right;
+    font-weight: bold;
+}
+
+.total-value {
+    font-weight: bold;
 }
 
 /* Error display styles */
