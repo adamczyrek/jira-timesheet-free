@@ -118,32 +118,6 @@ python server.py
 ```
 Then visit `http://localhost:8000`
 
-### Production Deployment
-
-For production use, consider:
-
-1. **Reverse Proxy**: Set up nginx/Apache in front of the Python server
-2. **HTTPS**: Configure SSL certificates for secure communication
-3. **Process Manager**: Use supervisor or systemd to manage the Python process
-4. **Access Control**: Restrict access to trusted networks/users
-
-Example nginx configuration:
-```nginx
-server {
-    listen 443 ssl;
-    server_name your-domain.com;
-
-    ssl_certificate /path/to/cert.pem;
-    ssl_certificate_key /path/to/key.pem;
-
-    location / {
-        proxy_pass http://localhost:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}
-```
-
 ## Contributing
 
 1. Fork the repository
