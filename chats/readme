@@ -1,4 +1,4 @@
 I created jira-timesheet-free with the assitance of Windsurf + Sonnet 3.5.
-This folder contains the contents of these two commands from my global_rules.md file which instructs Windsurf. The pertanant contents are:
+This folder contains the results of these two commands from my global_rules.md file which instructs Windsurf. The pertanant contents are:
   1. Only when the USER prompts #DONE, create a new .md file in /chats with the prefix of date-time (20250317-0815), and then a short description of the chat.The contents are a summary of what we did in this chat, including modified files. If there is anything left to do, include a section TO DO. At the top of the file include the start time and end time of the chat. The goal of this log is so that it can be used to continue this work in later chats.
   2. When the user prompts #UPDATE, create or update the app-summary.md file in /chats. This file contains a detailed summary of the app, with no code examples. How the code works is written in plain English.
