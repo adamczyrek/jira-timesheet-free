@@ -2,6 +2,10 @@
 
 A lightweight, secure web application for generating timesheet reports from Jira worklogs. Built with vanilla JavaScript and Python, this tool allows you to easily track time spent across Jira issues with no external dependencies, and for free.
 
+## Screenshot
+![image](https://github.com/user-attachments/assets/e2ce2d24-8a3d-486c-922a-3669b659a7ed)
+
+
 ## Features
 
 - Secure handling of Jira API credentials
