@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jira Hours Report</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Jira Timesheet Generator</h1>
+        
+        <div id="errorDisplay" class="error-section hidden">
+            <div class="error-content">
+                <div class="error-header">
+                    <span class="error-title">Error</span>
+                    <button class="error-close" onclick="closeError()">×</button>
+                </div>
+                <div class="error-message"></div>
+                <div class="error-details hidden">
+                    <div class="error-details-header">Technical Details</div>
+                    <pre class="error-details-content"></pre>
+                </div>
+                <button class="error-toggle-details" onclick="toggleErrorDetails()">Show Technical Details</button>
+            </div>
+        </div>
+
+        <div class="config-section">
+            <h2>Configuration</h2>
+            <div class="form-group">
+                <label for="jiraDomain">Jira Domain:</label>
+                <input type="text" id="jiraDomain" placeholder="your-domain.atlassian.net">
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" placeholder="your-email@example.com">
+                <div class="field-description">The email address associated with your Atlassian account. This is used for API authentication.</div>
+            </div>
+            <div class="form-group">
+                <label for="apiToken">API Token:</label>
+                <input type="password" id="apiToken" placeholder="your-api-token">
+            </div>
+            <div class="form-group">
+                <label for="accountId">User Account ID:</label>
+                <input type="text" id="accountId" placeholder="user-account-id">
+                <div class="field-description">This is the user account for which the timesheet is being generated. Your Atlassian account ID (not your email). You can find this by viewing your Jira profile - it's in the URL as '123456:123456f7-C452-66bd-ac99-1236ef084ca6'.</div>
+            </div>
+            <div class="form-group">
+                <label for="projectKey">Project Key (optional):</label>
+                <input type="text" id="projectKey" placeholder="Leave empty for all projects">
+            </div>
+            <div class="form-group">
+                <label for="startDate">Start Date (optional):</label>
+                <input type="date" id="startDate">
+            </div>
+            <div class="form-group">
+                <label for="endDate">End Date (optional):</label>
+                <input type="date" id="endDate">
+            </div>
+        </div>
+
+        <div class="actions">
+            <button id="generateReport" class="primary-button">Generate Report</button>
+            <button id="saveConfig" class="secondary-button">Save Configuration</button>
+            <button id="loadConfig" class="secondary-button">Load Configuration</button>
+        </div>
+
+        <div id="progress" class="progress-section hidden">
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+            <div id="progressText">Processing...</div>
+        </div>
+
+        <div id="results" class="results-section hidden">
+            <h2>Results</h2>
+            <div class="download-buttons">
+                <button id="downloadCsv" class="secondary-button">Download Detailed Report</button>
+                <button id="downloadSummary" class="secondary-button">Download Summary Report</button>
+            </div>
+            <div class="summary-stats">
+                <div id="totalHours">Total Hours: 0</div>
+            </div>
+            <div class="table-container">
+                <table id="worklogTable">
+                    <thead>
+                        <tr>
+                            <th>Issue Key</th>
+                            <th>Issue Summary</th>
+                            <th>Date</th>
+                            <th>Hours Logged</th>
+                            <th>Comment</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
