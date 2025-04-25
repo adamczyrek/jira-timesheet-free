@@ -110,14 +110,6 @@ Optional filters:
    - Detailed report includes all worklog entries
    - Summary report shows daily totals
 
-## Deployment Options
-
-### Local Development
-```bash
-python server.py
-```
-Then visit `http://localhost:8000`
-
 ## Contributing
 
 1. Fork the repository
