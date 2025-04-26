@@ -4,27 +4,21 @@ A lightweight, secure desktop and web application for generating timesheet repor
 
 ## Screenshot
 ![image](https://github.com/user-attachments/assets/d73bb113-90f9-42fd-91ed-c8b89a6e52f3)
+## Installation & Usage
 
+### Recommended: Desktop Application (Electron)
 
-## Quick Start
+The easiest way to use Jira Timesheet Free is with our desktop application, which packages everything you need into a single installer.
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/jira-timesheet-free.git
-   cd jira-timesheet-free
-   ```
-   (Or just download and expand the zip file, then run command prompt)
+#### Download & Install
 
-2. Start the server:
-   ```bash
-   python server.py
-   ```
-   (If you are not sure if you have python installed: https://www.python.org/downloads/)
+You can download the latest release:
 
-3. Open your browser and navigate to:
-   ```
-   http://localhost:8000
-   ```
+- Windows: `[Jira-Timesheet-Free-Setup-1.0.0.exe](https://github.com/adamczyrek/jira-timesheet-free/releases/Jira-Timesheet-Free-Setup-1.0.0.exe)`
+- macOS: `Jira-Timesheet-Free-1.0.0.dmg` (coming soon)
+- Linux: `Jira-Timesheet-Free-1.0.0.AppImage` (coming soon)
+
+Run the installer and follow the prompts. Once installed, launch the app from your desktop shortcut or applications menu.
 
 ## Configuration
 
@@ -61,22 +55,6 @@ Optional filters:
 - Zero external dependencies
 - Responsive design with automatic light/dark theme support
 - Available as both a desktop app and a simple web application
-
-## Installation & Usage
-
-### Recommended: Desktop Application (Electron)
-
-The easiest way to use Jira Timesheet Free is with our desktop application, which packages everything you need into a single installer.
-
-#### Download & Install
-
-You can download the latest release:
-
-- Windows: `[Jira-Timesheet-Free-Setup-1.0.0.exe](https://github.com/adamczyrek/jira-timesheet-free/releases/Jira-Timesheet-Free-Setup-1.0.0.exe)`
-- macOS: `Jira-Timesheet-Free-1.0.0.dmg` (coming soon)
-- Linux: `Jira-Timesheet-Free-1.0.0.AppImage` (coming soon)
-
-Run the installer and follow the prompts. Once installed, launch the app from your desktop shortcut or applications menu.
 
 #### Running from Source
 
