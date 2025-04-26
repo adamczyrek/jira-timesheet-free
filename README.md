@@ -5,6 +5,50 @@ A lightweight, secure web application for generating timesheet reports from Jira
 ## Screenshot
 ![image](https://github.com/user-attachments/assets/d73bb113-90f9-42fd-91ed-c8b89a6e52f3)
 
+
+## Quick Start
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/jira-timesheet-free.git
+   cd jira-timesheet-free
+   ```
+   (Or just download and expand the zip file, then run command prompt)
+
+2. Start the server:
+   ```bash
+   python server.py
+   ```
+   (If you are not sure if you have python installed: https://www.python.org/downloads/)
+
+3. Open your browser and navigate to:
+   ```
+   http://localhost:8000
+   ```
+
+## Configuration
+
+You'll need the following information from your Jira instance:
+
+1. **Jira Domain**: Your Atlassian domain (e.g., `your-domain.atlassian.net`)
+2. **Email**: Your Atlassian account email
+3. **API Token**: Generate from [Atlassian Account Settings](https://id.atlassian.com/manage-profile/security/api-tokens)
+4. **Timesheet User Email**: Email of the user whose timesheet you want to generate (leave empty to use your own email, you can only generate timesheets for other users if you are a Jira admin)
+
+Optional filters:
+- Project Key (e.g., "PROJ")
+- Start Date
+- End Date
+
+## Usage
+
+1. Enter your Jira credentials and configuration
+2. Click "Generate Report"
+3. View your worklog data in the table
+4. Download as CSV:
+   - Detailed report includes all worklog entries
+   - Summary report shows daily totals
+
 ## Features
 
 - Secure handling of Jira API credentials
@@ -67,49 +111,6 @@ This approach works because:
 - Python 3.6 or higher
 - A Jira Cloud instance
 - A Jira API token (can be generated from your Atlassian account settings)
-
-## Quick Start
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/jira-timesheet-free.git
-   cd jira-timesheet-free
-   ```
-   (Or just download and expand the zip file, then run command prompt)
-
-2. Start the server:
-   ```bash
-   python server.py
-   ```
-   (If you are not sure if you have python installed: https://www.python.org/downloads/)
-
-3. Open your browser and navigate to:
-   ```
-   http://localhost:8000
-   ```
-
-## Configuration
-
-You'll need the following information from your Jira instance:
-
-1. **Jira Domain**: Your Atlassian domain (e.g., `your-domain.atlassian.net`)
-2. **Email**: Your Atlassian account email
-3. **API Token**: Generate from [Atlassian Account Settings](https://id.atlassian.com/manage-profile/security/api-tokens)
-4. **Timesheet User Email**: Email of the user whose timesheet you want to generate (leave empty to use your own email, you can only generate timesheets for other users if you are a Jira admin)
-
-Optional filters:
-- Project Key (e.g., "PROJ")
-- Start Date
-- End Date
-
-## Usage
-
-1. Enter your Jira credentials and configuration
-2. Click "Generate Report"
-3. View your worklog data in the table
-4. Download as CSV:
-   - Detailed report includes all worklog entries
-   - Summary report shows daily totals
 
 ## Contributing
 
