@@ -7,12 +7,18 @@
  * - Handling app lifecycle events (ready, window-all-closed, activate)
  */
 
-const { app, BrowserWindow, ipcMain, Menu, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, shell, dialog } = require('electron');
 const path = require('path');
 const url = require('url');
 const { PythonShell } = require('python-shell');
 const log = require('electron-log');
 const Store = require('electron-store');
+const fs = require('fs');
+
+// Configure logging
+log.transports.file.level = 'debug';
+log.transports.console.level = 'debug';
+log.info('App starting...');
 
 // Initialize configuration store
 const store = new Store();
@@ -26,6 +32,8 @@ let pythonPort = 8000;
  * Create the main application window with appropriate settings
  */
 function createWindow() {
+  log.info('Creating main window...');
+  
   // Create the browser window
   mainWindow = new BrowserWindow({
     width: 1200,
@@ -36,7 +44,7 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js')
     },
     title: 'Jira Timesheet Free',
-    icon: path.join(__dirname, '..', 'static', 'favicon.ico')
+    icon: path.join(__dirname, 'icons', 'win', 'icon.ico')
   });
 
   // Start Python server if not running in development mode with the server already started
@@ -44,21 +52,40 @@ function createWindow() {
     startPythonServer();
   }
 
-  // Determine whether to load from development server or from local files
-  const startUrl = process.env.ELECTRON_START_URL || 
-    url.format({
-      pathname: 'localhost:' + pythonPort,
-      protocol: 'http:',
-      slashes: true
-    });
-
-  // Load the app
-  mainWindow.loadURL(startUrl);
-
-  // Open DevTools in development mode
-  if (process.env.NODE_ENV === 'development') {
+  // Enable DevTools in development mode or with explicit flag
+  if (process.env.NODE_ENV === 'development' || process.argv.includes('--dev')) {
     mainWindow.webContents.openDevTools();
+    log.info('DevTools opened for debugging');
   }
+
+  // Log when fails and when succeeds
+  mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
+    log.error(`Failed to load: ${errorDescription} (${errorCode})`);
+    dialog.showErrorBox('Loading Error', 
+      `Failed to load the application: ${errorDescription}\n\n` +
+      'Please check the logs for more details.'
+    );
+  });
+
+  mainWindow.webContents.on('did-finish-load', () => {
+    log.info('Page loaded successfully');
+  });
+
+  // Wait a bit for the Python server to start before loading the URL
+  setTimeout(() => {
+    // Determine whether to load from development server or from local server
+    const startUrl = process.env.ELECTRON_START_URL || 
+      url.format({
+        pathname: 'localhost:' + pythonPort,
+        protocol: 'http:',
+        slashes: true
+      });
+
+    log.info(`Loading URL: ${startUrl}`);
+    
+    // Load the app
+    mainWindow.loadURL(startUrl);
+  }, 2000); // Wait 2 seconds for the server to start
 
   // Open external links in browser
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
@@ -103,6 +130,17 @@ function createWindow() {
           click: async () => {
             shell.openExternal('https://github.com/adamczyrek/jira-timesheet-free');
           }
+        },
+        {
+          label: 'Toggle Developer Tools',
+          click: () => mainWindow.webContents.toggleDevTools()
+        },
+        {
+          label: 'Show Logs',
+          click: () => {
+            const logPath = log.transports.file.getFile().path;
+            shell.showItemInFolder(logPath);
+          }
         }
       ]
     }
@@ -123,42 +161,43 @@ function createWindow() {
  */
 function startPythonServer() {
   try {
+    log.info('Starting Python server...');
+    
     // Determine the path to the Python script based on whether we're in development or production
-    let pythonPath;
+    let pythonScriptPath;
+    
     if (app.isPackaged) {
-      // In production, Python is in the resources directory
-      pythonPath = path.join(process.resourcesPath, 'python');
+      // In packaged app, server.py should be in the resources folder
+      pythonScriptPath = path.join(process.resourcesPath, 'server.py');
     } else {
-      // In development, Python is in the project directory
-      pythonPath = path.join(__dirname, '..', 'python');
+      // In development, server.py is in the project root
+      pythonScriptPath = path.join(app.getAppPath(), 'server.py');
+    }
+
+    log.info(`Using Python script at: ${pythonScriptPath}`);
+
+    // Verify the script exists
+    if (!fs.existsSync(pythonScriptPath)) {
+      log.error(`Python script not found at: ${pythonScriptPath}`);
+      dialog.showErrorBox('Server Error', 
+        `Could not find server.py at: ${pythonScriptPath}\n\n` +
+        'The application may not work correctly. Please reinstall it.'
+      );
+      return;
     }
 
     // Create options for the Python process
     const options = {
       mode: 'text',
-      pythonPath: 'python', // Use system Python or bundled Python
+      pythonPath: 'python', // Use system Python
       pythonOptions: ['-u'], // Unbuffered output
-      scriptPath: pythonPath,
       args: [`--port=${pythonPort}`]
     };
 
-    // Copy the server.py file to the python directory if in development mode
-    if (!app.isPackaged) {
-      const fs = require('fs');
-      const srcPath = path.join(__dirname, '..', 'server.py');
-      const destPath = path.join(pythonPath, 'server.py');
-      
-      // Create the directory if it doesn't exist
-      if (!fs.existsSync(pythonPath)) {
-        fs.mkdirSync(pythonPath, { recursive: true });
-      }
-      
-      // Copy the file
-      fs.copyFileSync(srcPath, destPath);
-    }
+    log.info('Python options:', JSON.stringify(options));
 
     // Start the Python process
-    pythonProcess = new PythonShell('server.py', options);
+    pythonProcess = new PythonShell(pythonScriptPath, options);
 
     // Log messages from the Python process
     pythonProcess.on('message', (message) => {
@@ -168,18 +207,30 @@ function startPythonServer() {
     // Handle errors
     pythonProcess.on('error', (err) => {
       log.error('Python Server Error:', err);
-      app.quit();
+      dialog.showErrorBox('Server Error', 
+        `Failed to start the Python server: ${err.message}\n\n` +
+        'The application may not work correctly. Please check your Python installation.'
+      );
     });
 
     // Handle process exit
     pythonProcess.on('close', (code) => {
       log.info(`Python Server exited with code ${code}`);
+      if (code !== 0) {
+        dialog.showErrorBox('Server Error', 
+          `The Python server exited unexpectedly with code ${code}.\n\n` +
+          'The application may not work correctly. Please check the logs for details.'
+        );
+      }
     });
 
     log.info('Python server started');
   } catch (error) {
     log.error('Failed to start Python server:', error);
-    app.quit();
+    dialog.showErrorBox('Server Error', 
+      `Failed to start the Python server: ${error.message}\n\n` +
+      'The application may not work correctly. Please check your Python installation.'
+    );
   }
 }
 
@@ -196,6 +247,7 @@ function stopPythonServer() {
 
 // Create the window when Electron has finished initialization
 app.whenReady().then(() => {
+  log.info('App is ready, creating window...');
   createWindow();
 
   // macOS specific behavior to recreate window when dock icon is clicked
@@ -215,5 +267,9 @@ app.on('window-all-closed', () => {
 // Handle any uncaught exceptions
 process.on('uncaughtException', (error) => {
   log.error('Uncaught Exception:', error);
+  dialog.showErrorBox('Application Error', 
+    `An unhandled error occurred: ${error.message}\n\n` +
+    'The application may not work correctly. Please check the logs for details.'
+  );
   app.quit();
 });

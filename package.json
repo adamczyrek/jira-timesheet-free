@@ -1,6 +1,6 @@
 {
   "name": "jira-timesheet-free",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A free, lightweight, secure application for generating timesheet reports from Jira worklogs",
   "main": "electron/main.js",
   "scripts": {
@@ -22,23 +22,18 @@
     "time tracking",
     "worklog"
   ],
-  "author": "Your Name",
+  "author": "Adam Czyrek",
   "license": "MIT",
   "build": {
-    "appId": "com.yourdomain.jira-timesheet-free",
+    "appId": "com.github.adamczyrek.jira-timesheet-free",
     "productName": "Jira Timesheet Free",
     "files": [
       "electron/**/*",
       "static/**/*",
-      "proxy/**/*",
+      "server.py",
       "package.json"
     ],
     "extraResources": [
-      {
-        "from": "python",
-        "to": "python",
-        "filter": ["**/*"]
-      },
       {
         "from": "server.py",
         "to": "server.py"
