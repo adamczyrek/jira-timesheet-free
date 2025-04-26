@@ -146,20 +146,6 @@ If you prefer not to install a desktop application or have specific deployment n
    http://localhost:8000
    ```
 
-## Project Structure
-
-```
-jira-timesheet-free/
-├── static/              # Static web assets (HTML, CSS, JS)
-├── python/             # Python implementation
-├── electron/           # Electron app files
-├── server.py           # Python proxy server launcher
-├── start-app.js        # Application launcher script
-├── package.json        # Node.js dependencies and scripts
-├── LICENSE             # MIT license
-└── README.md           # This file
-```
-
 ## Configuration
 
 You'll need the following information from your Jira instance:
