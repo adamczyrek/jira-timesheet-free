@@ -14,9 +14,8 @@ The easiest way to use Jira Timesheet Free is with our desktop application, whic
 
 You can download the latest release:
 
-- Windows: `[Jira-Timesheet-Free-Setup-1.0.0.exe](https://github.com/adamczyrek/jira-timesheet-free/releases/Jira-Timesheet-Free-Setup-1.0.0.exe)`
-- macOS: `Jira-Timesheet-Free-1.0.0.dmg` (coming soon)
-- Linux: `Jira-Timesheet-Free-1.0.0.AppImage` (coming soon)
+- Windows: [Jira-Timesheet-Free-Setup-1.0.0.exe](https://github.com/adamczyrek/jira-timesheet-free/releases/Jira-Timesheet-Free-Setup-1.0.0.exe)
+- macOS: `Jira-Timesheet-Free-1.0.0.dmg` (coming soon, if you have Mac, please build and create a PR)
 
 Run the installer and follow the prompts. Once installed, launch the app from your desktop shortcut or applications menu.
 
