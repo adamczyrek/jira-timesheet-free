@@ -81,6 +81,7 @@ This approach works because:
    ```bash
    python server.py
    ```
+   (If you are not sure if you have python installed: https://www.python.org/downloads/)
 
 3. Open your browser and navigate to:
    ```
