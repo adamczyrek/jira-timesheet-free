@@ -1,0 +1,82 @@
+{
+  "name": "jira-timesheet-free",
+  "version": "1.0.0",
+  "description": "A free, lightweight, secure application for generating timesheet reports from Jira worklogs",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "electron .",
+    "server": "python server.py",
+    "dev": "concurrently \"npm run server\" \"cross-env ELECTRON_START_URL=http://localhost:8000 electron .\"",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "postinstall": "npm run install-python-deps",
+    "install-python-deps": "python -m pip install --no-deps -r python-requirements.txt"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/jira-timesheet-free.git"
+  },
+  "keywords": [
+    "jira",
+    "timesheet",
+    "time tracking",
+    "worklog"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "build": {
+    "appId": "com.yourdomain.jira-timesheet-free",
+    "productName": "Jira Timesheet Free",
+    "files": [
+      "electron/**/*",
+      "static/**/*",
+      "proxy/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "python",
+        "to": "python",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "server.py",
+        "to": "server.py"
+      }
+    ],
+    "win": {
+      "target": ["nsis"],
+      "icon": "electron/icons/win/icon.ico",
+      "certificateFile": null,
+      "certificatePassword": null,
+      "publisherName": null,
+      "verifyUpdateCodeSignature": false
+    },
+    "mac": {
+      "target": ["dmg"],
+      "icon": "electron/icons/mac/icon.icns",
+      "hardenedRuntime": false
+    },
+    "linux": {
+      "target": ["AppImage"],
+      "icon": "electron/icons/png/512x512.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "${productName}-Setup-${version}.${ext}"
+    },
+    "publish": null
+  },
+  "devDependencies": {
+    "concurrently": "^7.6.0",
+    "cross-env": "^7.0.3",
+    "electron": "^25.0.0",
+    "electron-builder": "^24.0.0"
+  },
+  "dependencies": {
+    "electron-log": "^5.0.0",
+    "electron-store": "^8.1.0",
+    "python-shell": "^5.0.0"
+  }
+}

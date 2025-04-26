@@ -1,6 +1,6 @@
 # Jira Timesheet Free Report Generator
 
-A lightweight, secure web application for generating timesheet reports from Jira worklogs. Built with vanilla JavaScript and Python, this tool allows you to easily track time spent across Jira issues with no external dependencies, and for free.
+A lightweight, secure desktop and web application for generating timesheet reports from Jira worklogs. Built with Electron, JavaScript, and Python, this tool allows you to easily track time spent across Jira issues with no external dependencies, and for free.
 
 ## Screenshot
 ![image](https://github.com/user-attachments/assets/e2ce2d24-8a3d-486c-922a-3669b659a7ed)
@@ -8,34 +8,144 @@ A lightweight, secure web application for generating timesheet reports from Jira
 
 ## Features
 
+- Convenient desktop application with automatic updates
 - Secure handling of Jira API credentials
 - Generate detailed worklog reports
 - Filter by date range and project
-- Export to CSV format
+- Export to CSV format with total hours
 - Direct links to Jira issues
 - Save/load configuration locally
 - Zero external dependencies
 - Responsive design with automatic light/dark theme support
+- Available as both a desktop app and a simple web application
+
+## Installation & Usage
+
+### Recommended: Desktop Application (Electron)
+
+The easiest way to use Jira Timesheet Free is with our desktop application, which packages everything you need into a single installer.
+
+#### Download & Install
+
+You can download the latest release:
+
+- Windows: `[Jira-Timesheet-Free-Setup-1.0.0.exe](https://github.com/adamczyrek/jira-timesheet-free/releases/Jira-Timesheet-Free-Setup-1.0.0.exe)`
+- macOS: `Jira-Timesheet-Free-1.0.0.dmg` (coming soon)
+- Linux: `Jira-Timesheet-Free-1.0.0.AppImage` (coming soon)
+
+Run the installer and follow the prompts. Once installed, launch the app from your desktop shortcut or applications menu.
+
+#### Running from Source
+
+If you prefer to run the app from source:
+
+**Prerequisites**
+- Node.js 14 or higher
+- npm or yarn
+- Python 3.6 or higher
+
+**Quick Start**
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/jira-timesheet-free.git
+   cd jira-timesheet-free
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Start the application:
+   ```bash
+   node start-app.js --electron
+   ```
+
+**Building from Source**
+
+To create your own installer:
+
+```bash
+npm run dist
+```
+
+This will create platform-specific installers in the `dist` folder.
+
+### Alternative: Run as a Web Application
+
+If you prefer not to install a desktop application or have specific deployment needs, you can run Jira Timesheet Free as a standalone web application with just Python.
+
+**Prerequisites**
+- Python 3.6 or higher
+- A Jira Cloud instance
+- A Jira API token
+
+**Quick Start**
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/jira-timesheet-free.git
+   cd jira-timesheet-free
+   ```
+
+2. Start the server:
+   ```bash
+   python server.py
+   ```
+   or
+   ```bash
+   node start-app.js
+   ```
+
+3. Open your browser and navigate to:
+   ```
+   http://localhost:8000
+   ```
 
 ## Project Structure
 
 ```
 jira-timesheet-free/
-├── static/              # Static assets
-│   ├── index.html      # Main HTML file
-│   ├── script.js       # JavaScript code
-│   └── styles.css      # CSS styles
-├── server.py           # Python proxy server
-├── LICENSE            # MIT license
-└── README.md         # This file
+├── static/              # Static web assets (HTML, CSS, JS)
+├── python/             # Python implementation
+├── electron/           # Electron app files
+├── server.py           # Python proxy server launcher
+├── start-app.js        # Application launcher script
+├── package.json        # Node.js dependencies and scripts
+├── LICENSE             # MIT license
+└── README.md           # This file
 ```
+
+## Configuration
+
+You'll need the following information from your Jira instance:
+
+1. **Jira Domain**: Your Atlassian domain (e.g., `your-domain.atlassian.net`)
+2. **Email**: Your Atlassian account email
+3. **API Token**: Generate from [Atlassian Account Settings](https://id.atlassian.com/manage-profile/security/api-tokens)
+4. **Timesheet User Email**: Email of the user whose timesheet you want to generate (leave empty to use your own email, you can only generate timesheets for other users if you are a Jira admin)
+
+Optional filters:
+- Project Key (e.g., "PROJ") - Filter to a specific project
+- Start Date - Beginning of the timesheet period
+- End Date - End of the timesheet period
+
+## Usage
+
+1. Enter your Jira credentials and configuration
+2. Click "Generate Report"
+3. View your worklog data in the table, with total hours at the bottom
+4. Download as CSV:
+   - Detailed report includes all worklog entries
+   - Summary report shows daily totals
 
 ## Security Considerations
 
 ### API Credentials
-- The application uses a local proxy server to handle Jira API requests
-- Credentials are never stored on the server, only forwarded to Jira
-- All configuration data is stored locally in your browser
+- The application uses a local proxy to handle Jira API requests
+- Credentials are never stored on a remote server, only forwarded to Jira
+- All configuration data is stored locally in Electron's secure storage or your browser's localStorage
 - SSL verification is enforced for all Jira API requests
 
 ### CORS and Network Security
@@ -92,87 +202,6 @@ This approach:
 4. **Standalone Desktop App**: Would solve CORS but lose the convenience of web deployment
 
 Our local proxy strikes the right balance between security, simplicity, and usability.
-
-## Prerequisites
-
-- Python 3.6 or higher
-- A Jira Cloud instance
-- A Jira API token (can be generated from your Atlassian account settings)
-
-## Quick Start
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/jira-timesheet-free.git
-   cd jira-timesheet-free
-   ```
-
-2. Start the server:
-   ```bash
-   python server.py
-   ```
-
-3. Open your browser and navigate to:
-   ```
-   http://localhost:8000
-   ```
-
-## Configuration
-
-You'll need the following information from your Jira instance:
-
-1. **Jira Domain**: Your Atlassian domain (e.g., `your-domain.atlassian.net`)
-2. **Email**: Your Atlassian account email
-3. **API Token**: Generate from [Atlassian Account Settings](https://id.atlassian.com/manage-profile/security/api-tokens)
-4. **Timesheet User Email**: Email of the user whose timesheet you want to generate (leave empty to use your own email, you can only generate timesheets for other users if you are a Jira admin)
-
-Optional filters:
-- Project Key (e.g., "PROJ")
-- Start Date
-- End Date
-
-## Usage
-
-1. Enter your Jira credentials and configuration
-2. Click "Generate Report"
-3. View your worklog data in the table
-4. Download as CSV:
-   - Detailed report includes all worklog entries
-   - Summary report shows daily totals
-
-## Deployment Options
-
-### Local Development
-```bash
-python server.py
-```
-Then visit `http://localhost:8000`
-
-### Production Deployment
-
-For production use, consider:
-
-1. **Reverse Proxy**: Set up nginx/Apache in front of the Python server
-2. **HTTPS**: Configure SSL certificates for secure communication
-3. **Process Manager**: Use supervisor or systemd to manage the Python process
-4. **Access Control**: Restrict access to trusted networks/users
-
-Example nginx configuration:
-```nginx
-server {
-    listen 443 ssl;
-    server_name your-domain.com;
-
-    ssl_certificate /path/to/cert.pem;
-    ssl_certificate_key /path/to/key.pem;
-
-    location / {
-        proxy_pass http://localhost:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}
-```
 
 ## Contributing
 

@@ -1,0 +1,3 @@
+# Python dependencies for Jira Timesheet Free
+# These are minimal as we rely on the standard library
+# No external dependencies required for the proxy server
