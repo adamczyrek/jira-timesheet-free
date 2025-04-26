@@ -75,6 +75,7 @@ This approach works because:
    git clone https://github.com/yourusername/jira-timesheet-free.git
    cd jira-timesheet-free
    ```
+   (Or just download and expand the zip file, then run command prompt)
 
 2. Start the server:
    ```bash
