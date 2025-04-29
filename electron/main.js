@@ -165,16 +165,20 @@ function startPythonServer() {
     
     // Determine the path to the Python script based on whether we're in development or production
     let pythonScriptPath;
+    let staticFilesPath;
     
     if (app.isPackaged) {
       // In packaged app, server.py should be in the resources folder
       pythonScriptPath = path.join(process.resourcesPath, 'server.py');
+      staticFilesPath = path.join(process.resourcesPath, 'static');
     } else {
       // In development, server.py is in the project root
       pythonScriptPath = path.join(app.getAppPath(), 'server.py');
+      staticFilesPath = path.join(app.getAppPath(), 'static');
     }
 
     log.info(`Using Python script at: ${pythonScriptPath}`);
+    log.info(`Using static files from: ${staticFilesPath}`);
 
     // Verify the script exists
     if (!fs.existsSync(pythonScriptPath)) {
@@ -191,7 +195,11 @@ function startPythonServer() {
       mode: 'text',
       pythonPath: 'python', // Use system Python
       pythonOptions: ['-u'], // Unbuffered output
-      args: [`--port=${pythonPort}`]
+      args: [
+        `--port=${pythonPort}`,
+        `--static-path=${staticFilesPath}`,
+        '--debug'
+      ]
     };
 
     log.info('Python options:', JSON.stringify(options));
